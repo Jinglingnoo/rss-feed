@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-feed:
+  rss-update:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -30,7 +30,7 @@ jobs:
           TMDB_ACCOUNT_ID: ${{ secrets.TMDB_ACCOUNT_ID }}
         run: bash scripts/run_updates.sh
 
-      - name: Commit and push changes
+      - name: Commit changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'

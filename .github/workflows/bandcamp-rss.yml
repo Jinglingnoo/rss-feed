@@ -1,0 +1,43 @@
+name: Bandcamp RSS Update
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  rss-update:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with: { ref: rss }
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Update RSS Feed
+      working-directory: ./bandcamp
+      run: |
+        python user_orchestrator.py > log.txt
+
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add .
+        if ! git diff --staged --quiet; then
+          git commit -m "Auto-update: RSS Feeds"
+          git push -u origin rss
+        else
+          echo "No changes to commit."
+        fi

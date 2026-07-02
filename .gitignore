@@ -1,0 +1,16 @@
+.vscode/*
+.vscode\settings.json
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+#python
+__pycache__
+
+images/
+
+# for internal testing, non-production code
+scratch.py

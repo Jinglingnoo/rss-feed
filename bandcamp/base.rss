@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+<channel>
+<title>Bandcamp Updates</title>
+<link>https://bandcamp.com</link>
+<description>Essentially sends what you would normally get from bandcamp in an email, but as a discord notification instead, aggregated daily for multiple users.</description>
+<lastBuildDate>{{date}}</lastBuildDate>
+{{items}}
+</channel>
+</rss>
