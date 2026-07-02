@@ -2,6 +2,7 @@
 <title>{{title}}</title>
 <link>{{item_link}}</link>
 <guid>{{guid}}</guid>
-<description>{{links}}</description>
+<description><![CDATA[{{icon_html}}{{links}}]]></description>
 <pubDate>{{date}}</pubDate>
+<enclosure url="{{icon}}" type="image/jpeg" />
 </item>

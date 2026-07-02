@@ -51,4 +51,4 @@ for movie in movies:
     fe.guid(link, permalink=True)
     fe.pubDate(datetime.now().astimezone())
 
-fg.rss_file('feeds/athinorama_feed.xml')
+fg.rss_file('../feeds/athinorama_feed.xml')

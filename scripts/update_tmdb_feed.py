@@ -1,11 +1,12 @@
 import requests
 import os
 from datetime import datetime
-import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from lxml import etree as ET
+from lxml.etree import CDATA
+import xml.dom.minidom as minidom
 
 def get_rated_movies(auth_token, account_id):
-    """Fetch rated movies from TMDB API v4"""
     base_url = "https://api.themoviedb.org/4"
     url = f"{base_url}/account/{account_id}/movie/rated"
     
@@ -30,43 +31,37 @@ def get_rated_movies(auth_token, account_id):
     data = response.json()
     return data.get("results", [])
 
-def get_rating_color(rating):
-    if rating >= 7:
-        return "#2ecc71" # Green
-    elif rating >= 5:
-        return "#f1c40f" # Yellow/Orange
-    else:
-        return "#e74c3c" # Red
-
-def generate_rss_feed(movies, output_file="feeds/feed.xml"):
+def generate_rss_feed(movies, output_file="../feeds/feed.xml"):
     rss = ET.Element('rss', version='2.0')
     channel = ET.SubElement(rss, 'channel')
     
     ET.SubElement(channel, 'title').text = "Divinelink's Ratings"
     ET.SubElement(channel, 'link').text = "https://www.themoviedb.org/"
-    ET.SubElement(channel, 'description').text = "Latest movie ratings from Divinelink on TMDB"
+    ET.SubElement(channel, 'description').text = "Latest movie ratings from Divinelink"
     ET.SubElement(channel, 'language').text = "en-us"
     ET.SubElement(channel, 'lastBuildDate').text = datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0000")
     
     for movie in movies:
         item = ET.SubElement(channel, 'item')
-        
         title = movie.get('title', 'Unknown')
         movie_id = movie.get('id', '')
+        year = movie.get('release_date', '').split('-')[0] if movie.get('release_date') else ''
         link = f"https://www.themoviedb.org/movie/{movie_id}"
         
-        ET.SubElement(item, 'title').text = title
-        ET.SubElement(item, 'link').text = link
-        
-        # --- Parsing Logic ---
         account_rating = movie.get('account_rating', {})
         
         raw_value = account_rating.get('value', 0)
         try:
-            rating = int(float(raw_value))
+            rating = float(raw_value)
         except (ValueError, TypeError):
             rating = 0
             
+        # Convert rating to stars display
+        full_stars = int(rating // 2)
+        half_star = 1 if (rating % 2) >= 1 else 0
+        empty_stars = 5 - full_stars - half_star
+        stars_display = '★' * full_stars + ('½' if half_star else '') + '☆' * empty_stars
+        
         rated_at_str = account_rating.get('created_at')
         
         overview = movie.get('overview', 'No description available')
@@ -77,29 +72,25 @@ def generate_rss_feed(movies, output_file="feeds/feed.xml"):
         if poster_path:
             poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
         
-        color = get_rating_color(rating)
+        # Format title as: "Title, Year - Stars"
+        item_title = f"{title}, {year} - {stars_display}" if year else f"{title} - {stars_display}"
         
-        if overview:
-            overview = overview.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            
-        # Build HTML Description with Colored Star
-        # Using a span with color on the star character is more reliable than background-color
-        description_html = f"""
-        <div style="font-family: sans-serif; max-width: 600px;">
-            <p style="margin-bottom: 10px;">
-                <span style="color: {color}; font-size: 1.5em; font-weight: bold;">★</span> 
-                <span style="font-size: 1.2em; font-weight: bold; color: #333;">{rating}/10</span>
-                <br/>
-                <small style="color: #666;">Release Date: {release_date}</small>
-            </p>
-        """
+        ET.SubElement(item, 'title').text = item_title
+        ET.SubElement(item, 'link').text = link
         
+        # Build HTML Description with CDATA
+        description_html = ""
         if poster_url:
-            description_html += f'<img src="{poster_url}" alt="{title}" style="max-width: 200px; border-radius: 5px; margin-top: 10px; display: block;" /><br/>'
-            
-        description_html += f"<p style='color: #444; line-height: 1.5;'>{overview}</p></div>"
+            description_html += f'<img src="{poster_url}" alt="{title}" />\n'
         
-        ET.SubElement(item, 'description').text = description_html
+        if overview and overview != 'No description available':
+            description_html += f'<p>{overview}</p>\n'
+        
+        watched_date = rated_at_str.split('T')[0] if rated_at_str else 'Unknown'
+        description_html += f'<p>Watched on {watched_date}.</p>'
+        
+        desc_elem = ET.SubElement(item, 'description')
+        desc_elem.text = CDATA(description_html)
         
         if poster_url:
             enclosure = ET.SubElement(item, 'enclosure')
@@ -115,14 +106,16 @@ def generate_rss_feed(movies, output_file="feeds/feed.xml"):
                 pass
                 
         ET.SubElement(item, 'pubDate').text = pub_date_text
-        ET.SubElement(item, 'guid').text = link
+        
+        # Generate unique GUID
+        guid = ET.SubElement(item, 'guid')
+        guid.set('isPermaLink', 'false')
+        guid.text = f"tmdb-rating-{movie_id}-{rated_at_str or ''}"
     
-    xml_str = ET.tostring(rss, encoding='unicode')
-    dom = minidom.parseString(xml_str)
-    pretty_xml = dom.toprettyxml(indent="  ", encoding='UTF-8')
+    xml_str = ET.tostring(rss, encoding='UTF-8', pretty_print=True, xml_declaration=True)
     
     with open(output_file, 'wb') as f:
-        f.write(pretty_xml)
+        f.write(xml_str)
     
     print(f"RSS feed generated successfully with {len(movies)} movies!")
 
