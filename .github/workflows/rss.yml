@@ -37,7 +37,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-update: RSS Feeds"
+            git commit -m "Auto-update: Normal RSS Feeds"
             git push -u origin rss
           else
             echo "No changes to commit."
