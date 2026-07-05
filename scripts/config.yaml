@@ -1,0 +1,7 @@
+# Available sections for TMDB to fetch movies from.
+# Options: rated, watchlist, favorites
+# Remove or add items to customize which sections are fetched.
+tmdb_sections:
+  - rated
+  - watchlist
+  - favorites

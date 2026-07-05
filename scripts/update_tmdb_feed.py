@@ -1,16 +1,20 @@
 import requests
 import os
 import const
+import yaml
 from datetime import datetime, timezone
 from xml.dom import minidom
 from lxml import etree as ET
 from lxml.etree import CDATA
 import xml.dom.minidom as minidom
+from pathlib import Path
 
 from models import RssItem, ItemType
 from const import _tmdbPosterPath, _tmdbBaseV4Url
 
 OUTPUT_FILE = "../feeds/feed.xml"
+CONFIG_PATH = "config.yaml"
+TMDB_SECTION_KEY = "tmdb_sections"
 
 def _get_account_movies(endpoint, auth_token, account_id):
     base_url = const._tmdbBaseV4Url 
@@ -73,7 +77,7 @@ def _build_item(movie, item_type: ItemType, user):
         date_str = datetime.now(timezone.utc).isoformat()
         extra = f"Added to favorites from {user}."
         item_title = f"{user} added to favorites: {title}, {year}" if year else title
-        guid_text = f"tmdb-{item_type.value}-{mid}-{user}"        
+        guid_text = f"tmdb-{item_type.value}-{mid}-{user}"
 
     desc_html = ""
     if poster_url:
@@ -109,23 +113,50 @@ def _parse_date(date_str):
     except Exception:
         return datetime.min.replace(tzinfo=timezone.utc)
 
+def load_config():
+    config_path = Path(__file__).parent / CONFIG_PATH
+    defaults = {TMDB_SECTION_KEY: ["rated"]}
+    if not config_path.exists():
+        return defaults
+    try:
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+            if not config or TMDB_SECTION_KEY not in config:
+                return defaults
+            sections = config[TMDB_SECTION_KEY]
+            if not sections:
+                return defaults
+            return config
+    except Exception as e:
+        print(f"Warning: Could not load config: {e}. Using defaults.")
+        return defaults
 
 def generate_feed(user, auth_token, account_id):
     print(f"Fetching data from TMDB for {user}...")
-    rated = _get_account_movies("rated", auth_token, account_id)
-    watchlist = _get_account_movies("watchlist", auth_token, account_id)
-    favorites = _get_account_movies("favorites", auth_token, account_id)
+    config = load_config()
+    sections = config[TMDB_SECTION_KEY]
+    
+    movies = {}
+    for section in sections:
+        movies[section] = _get_account_movies(section, auth_token, account_id)
 
     items = []
-    for m in rated:
-        d = m.get('account_rating', {}).get('created_at')
-        items.append((_parse_date(d), _build_item(m, ItemType.RATED, user)))
+    for section in sections:
+        for m in movies.get(section, []):
+            if section == "rated":
+                d = m.get('account_rating', {}).get('created_at')
+                date = _parse_date(d)
+                item_type = ItemType.RATED
+            elif section == "watchlist":
+                date = datetime.now(timezone.utc)
+                item_type = ItemType.WATCHLIST
+            elif section == "favorites":
+                date = datetime.now(timezone.utc)
+                item_type = ItemType.FAVORITES
+            else:
+                continue  # Skip unknown sections
         
-    for m in watchlist:
-        items.append((datetime.now(timezone.utc), _build_item(m, ItemType.WATCHLIST, user)))
-
-    for m in favorites:
-        items.append((datetime.now(timezone.utc), _build_item(m, ItemType.FAVORITES, user)))
+            items.append((date, _build_item(m, item_type, user)))
 
     items.sort(key=lambda x: x[0], reverse=True)
     print(f"Processing {len(items)} items...")
