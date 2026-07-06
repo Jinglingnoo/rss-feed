@@ -1,7 +1,9 @@
 import time
+import cloudscraper
 import datetime
 import requests
 import const
+import random
 from bs4 import BeautifulSoup
 import re
 import json
@@ -97,8 +99,19 @@ def isItBandcampFriday():
         return False
 
 def getLinks(source, prefix, querySelectors, urlPostfix):
-    time.sleep(const._pingDelay)
-    requestsResponse = requests.get(f"{source.replace(const._newIndicator, '')}", headers={'user-agent': 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'})
+    requester = cloudscraper.create_scraper(
+        session_refresh_interval=300,
+        enable_stealth=True,
+        stealth_options={
+            'min_delay': 4.0,
+            'max_delay': 6.0,
+            'human_like_delays': True,
+            'randomize_headers': True,
+            'browser_quirks': True
+        },
+    )
+    
+    requestsResponse = requester.get(f"{source.replace(const._newIndicator, '')}")
     rawContent = requestsResponse.content
 
     retry = 1
@@ -107,7 +120,7 @@ def getLinks(source, prefix, querySelectors, urlPostfix):
             print(f"{prefix} Got {len(rawContent)} bytes of data. Retrying...")
             time.sleep(retry)
             retry *= 2
-            requestsResponse = requests.get(f"{source.replace(const._newIndicator, '')}", headers={'user-agent': 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'})
+            requestsResponse = requester.get(f"{source.replace(const._newIndicator, '')}")
             rawContent = requestsResponse.content
         else:
             print(f"{prefix} Got {len(rawContent)} bytes of data.")
@@ -141,7 +154,7 @@ def getLinks(source, prefix, querySelectors, urlPostfix):
             links.append(link)
         else:
             links.append(link.get_attribute_list("href")[0])
-    return links
+    return links        
 
 # user: the user of a bandcamp page, as dsiplayed in the URL for bandcamp
 # parserName: 1 word, suitable for use in logging and file names, lowercase
@@ -159,7 +172,7 @@ def runGet(user, parserName, urlPostfix, querySelectors, baseUrl, forceNotNew = 
     links = getLinks(f"{baseUrl}/{urlPostfix}", prefix, querySelectors, urlPostfix)
 
     if(len(links) == 0):
-        # This is usually because the artist does not have any tralbums on bandcamp yet
+        # This is usually because the artist does not have any albums on bandcamp yet
         print(f"{prefix} WARNING - could not find any links for {baseUrl}/{urlPostfix}")
 
     if(forceNotNew):

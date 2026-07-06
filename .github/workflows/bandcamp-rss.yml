@@ -2,7 +2,7 @@ name: Bandcamp RSS Update
 
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,9 @@ jobs:
         python-version: 3.11
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: |
+        pip install -r requirements.txt
+        pip install ai-cloudscraper
 
     - name: Update RSS Feed
       working-directory: ./bandcamp
