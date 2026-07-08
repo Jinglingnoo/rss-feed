@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rss version="2.0">
+  <channel>
+    <title>Jinglingnoo's Movie Feed</title>
+    <link>https://www.themoviedb.org/</link>
+    <description>Jinglingnoo's Activity</description>
+    <language>en-US</language>
+    <lastBuildDate>Wed, 08 Jul 2026 00:14:16 +0000</lastBuildDate>
+    <item>
+      <title>Jinglingnoo added to watchlist: Michael, 2026</title>
+      <link>https://www.themoviedb.org/movie/936075</link>
+      <description><![CDATA[<img src="https://image.tmdb.org/t/p/w500/zm0KAbOjlt9eR5y7vDiL2dEOwMl.jpg" alt="Michael" />
+<p>The story of Michael Jackson, one of the most influential artists the world has ever known, and his life beyond the music. His journey from the discovery of his extraordinary talent as the lead of the Jackson Five, to the visionary artist whose creative ambition fueled a relentless pursuit to become the biggest entertainer in the world, highlighting both his life off-stage and some of the most iconic performances from his early solo career.</p>
+<p>Added to watchlist from Jinglingnoo.</p>]]></description>
+      <pubDate>Wed, 08 Jul 2026 00:14:16 +0000</pubDate>
+      <enclosure url="https://image.tmdb.org/t/p/w500/zm0KAbOjlt9eR5y7vDiL2dEOwMl.jpg" type="image/jpeg"/>
+      <guid isPermaLink="false">tmdb-watchlist-936075-Jinglingnoo</guid>
+    </item>
+    <item>
+      <title>The Trial of the Chicago 7, 2020 - ★★★★☆</title>
+      <link>https://www.themoviedb.org/movie/556984</link>
+      <description><![CDATA[<img src="https://image.tmdb.org/t/p/w500/ahf5cVdooMAlDRiJOZQNuLqa1Is.jpg" alt="The Trial of the Chicago 7" />
+<p>What was supposed to be a peaceful protest turned into a violent clash with the police. What followed was one of the most notorious trials in history.</p>
+<p>Watched on 2026-07-05.</p>]]></description>
+      <pubDate>Sun, 05 Jul 2026 17:28:01 +0000</pubDate>
+      <enclosure url="https://image.tmdb.org/t/p/w500/ahf5cVdooMAlDRiJOZQNuLqa1Is.jpg" type="image/jpeg"/>
+      <guid isPermaLink="false">tmdb-rated-556984-2026-07-05T17:28:01Z</guid>
+    </item>
+  </channel>
+</rss>
