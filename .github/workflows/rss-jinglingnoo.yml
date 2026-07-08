@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with: { ref: rss }
+        with: { ref: outputs }
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -38,7 +38,7 @@ jobs:
           git add .
           if ! git diff --staged --quiet; then
             git commit -m "Auto-update: Normal RSS Feeds"
-            git push -u origin rss
+            git push -u origin outputs
           else
             echo "No changes to commit."
           fi
