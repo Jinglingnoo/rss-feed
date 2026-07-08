@@ -204,4 +204,4 @@ def generate_feed(user, auth_token, account_id):
 if __name__ == "__main__":
    auth_token = os.environ.get('TMDB_AUTH_TOKEN')
    account_id = os.environ.get('TMDB_ACCOUNT_ID')
-   generate_feed("Divinelink", auth_token, account_id)    
+   generate_feed("Jinglingnoo", auth_token, account_id)
